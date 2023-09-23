@@ -6,10 +6,12 @@
 This assignment is do design the collsion detection library for three shapes, 
 Circles, Lines, Box. So there will be 3! = 6 cases, in detail, Circle-circle, 
 Circle-line, Circle-box, Line-line, Line-box and Box-box collisions. This 
-assignment is write in processing.
+assignment is write in processing. 
 
 NOTE: Currently, the running time is calculated base on running one task file everytime.
-So it may need to manual update which task needs to be run.
+So it may need to manual update which task needs to be run. It is running on a PC with 
+CPU i7-12700 and GPU NVIDIA 3070.
+
 
 # Files
 # "Box.pde, Circle.pde, Line.pde"
@@ -27,13 +29,13 @@ Box-box: align box check is to compare the min and max of boxes
 
 Some results from the collision detection are in the chart below.
     Task	Circle  Line    Box	    Circle-Line Circle-Box	Line-Box    Num-Collision   Duration (ms)
-    1       0	    0	    0	    2	        0	        0           2               
-    2	    0	    0	    0	    0	        2	        0           2
-    3	    0	    6	    0	    0	        0	        2           7
-    4	    0	    2	    0	    0	        0	        5           6
-    5       15	    3	    0	    12	        8	        3           30
-    6	    29	    4	    21	    11	        71	        17          121
-    7	    14	    2	    602	    11	        262	        54          794
-    8	    325	    2	    514	    41	        794	        58          1183
-    9	    8	    2	    3456	6	        265	        126         3635
-    10	    0	    4	    10151	0	        152	        234         10298
+    1       0	    0	    0	    2	        0	        0           2               0.0187
+    2	    0	    0	    0	    0	        2	        0           2               0.0179
+    3	    0	    6	    0	    0	        0	        2           7               0.0309
+    4	    0	    2	    0	    0	        0	        5           6               0.0540
+    5       15	    3	    0	    12	        8	        3           30              0.2798
+    6	    29	    4	    21	    11	        71	        17          121             1.8044
+    7	    14	    2	    602	    11	        262	        54          794             15.7606
+    8	    325	    2	    514	    41	        794	        58          1183            24.0951
+    9	    8	    2	    3456	6	        265	        126         3635            88.7302
+    10	    0	    4	    10151	0	        152	        234         10298           673.2474

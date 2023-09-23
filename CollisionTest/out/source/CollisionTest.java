@@ -30,7 +30,7 @@ public void setup() {
   surface.setTitle("Collision Detection Visulaize [CSCI 5611 HW1]");
 
   String[] FileName = {
-    // "1",
+    "1",
     // "2",
     // "3",
     // "4",
@@ -39,7 +39,7 @@ public void setup() {
     // "7",
     // "8",
     // "9",
-    "10"
+    // "10"
   };
 
   for (String file : FileName) {
@@ -262,16 +262,6 @@ public boolean circleBoxCollision(Circle circle, Box box) {
 
 // check line-line collision
 public boolean lineLineCollision(Line line1, Line line2) {
-  // float x1 = line1.x1;
-  // float y1 = line1.y1;
-  // float x2 = line1.x2;
-  // float y2 = line1.y2;
-  
-  // float x3 = line2.x1;
-  // float y3 = line2.y1;
-  // float x4 = line2.x2;
-  // float y4 = line2.y2;
-
   // Calculate the direction vectors of the lines
   float dx1 = line1.x2 - line1.x1;
   float dy1 = line1.y2 - line1.y1;
@@ -313,9 +303,9 @@ public boolean lineBoxCollision(Line line, Box box) {
   if (line.y1 < yMin && line.y2 < yMin) return false;
   if (line.y1 > yMax && line.y2 > yMax) return false;
 
-  // Check if the line starts inside the box
-  if ((line.x1 >= xMin && line.x1 <= xMax && line.y1 >= yMin && line.y1 <= yMax) || // Start point is inside the box
-      (line.x2 >= xMin && line.x2 <= xMax && line.y2 >= yMin && line.y2 <= yMax)) { // Intersects right edge
+  // Check if the line starts or end inside the box
+  if ((line.x1 >= xMin && line.x1 <= xMax && line.y1 >= yMin && line.y1 <= yMax) || 
+      (line.x2 >= xMin && line.x2 <= xMax && line.y2 >= yMin && line.y2 <= yMax)) { 
     return true;
   }
 
@@ -357,21 +347,16 @@ public void readFile(String inputFilePath) {
       String[] parts = line.split("[\\s:]+");
 
       if (parts.length == 2) {
-        // println(parts);
         dataType = parts[0];
         count = PApplet.parseInt(parts[1]);
-        // println(dataType, num);
-      } else if (dataType != null && !parts[0].equals("#")) {
+      } else if (dataType != null && !parts[0].equals("#")) { // ignore the text hint here
         if (dataType.equals("Circles") && parts.length == 4) {
-          // println(parts);
           Circle circleShape = new Circle(PApplet.parseInt(parts[0]), PApplet.parseFloat(parts[1]), PApplet.parseFloat(parts[2]), PApplet.parseFloat(parts[3]));
           circles.add(circleShape);
         } else if (dataType.equals("Lines") && parts.length == 5) {
-          // println(parts);
           Line lineShape = new Line(PApplet.parseInt(parts[0]), PApplet.parseFloat(parts[1]), PApplet.parseFloat(parts[2]), PApplet.parseFloat(parts[3]), PApplet.parseFloat(parts[4]));
           lines.add(lineShape);
         } else if (dataType.equals("Boxes") && parts.length == 5){
-          // println(parts);  
           Box boxShape = new Box(PApplet.parseInt(parts[0]), PApplet.parseFloat(parts[1]), PApplet.parseFloat(parts[2]), PApplet.parseFloat(parts[3]), PApplet.parseFloat(parts[4]));
           boxes.add(boxShape);
         } else {
@@ -392,7 +377,6 @@ public void writeFile(String outputFilePath, ArrayList<Integer> uniqueId) {
   PrintWriter writer = createWriter(outputFilePath);
   writer.println("Duration: " + duration + "ms");
   writer.println("Num Collisions: " + uniqueId.size());
-  // println("Cirlce-cirlce collision: " + ccUniqueId.size());
     for (Integer i : uniqueId) {
       writer.println(i);
     }

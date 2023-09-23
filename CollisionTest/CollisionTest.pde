@@ -13,7 +13,7 @@ void setup() {
   surface.setTitle("Collision Detection Visulaize [CSCI 5611 HW1]");
 
   String[] FileName = {
-    // "1",
+    "1",
     // "2",
     // "3",
     // "4",
@@ -22,7 +22,7 @@ void setup() {
     // "7",
     // "8",
     // "9",
-    "10"
+    // "10"
   };
 
   for (String file : FileName) {
