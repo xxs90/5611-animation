@@ -29,12 +29,28 @@ public void setup() {
   /* size commented out by preprocessor */;
   surface.setTitle("Collision Detection Visulaize [CSCI 5611 HW1]");
 
-  String userInput = input("Which task do you wan to solve? ");
-  String inputFile = "./CollisionTasks/task" + userInput + ".txt";
-  String outputFile = "./test_CollisionTasks/task" + userInput + "_solution.txt";
-  readFile(inputFile);
-  ArrayList<Integer> uniqueId = checkCollision();
-  writeFile(outputFile, uniqueId); 
+  String[] FileName = {
+    // "1",
+    // "2",
+    // "3",
+    // "4",
+    // "5",
+    // "6",
+    // "7",
+    // "8",
+    // "9",
+    "10"
+  };
+
+  for (String file : FileName) {
+    String inputFile = "./CollisionTasks/task" + file + ".txt";
+    String outputFile = "./test_CollisionTasks/task" + file + "_solution.txt";
+    readFile(inputFile);
+    ArrayList<Integer> uniqueId = checkCollision();
+    writeFile(outputFile, uniqueId); 
+  } 
+
+  exit();
   
 }
 
@@ -176,6 +192,7 @@ public ArrayList<Integer> checkCollision() {
   return uniqueId;
 }
 
+// unique the id list and format that in numerical order
 public ArrayList<Integer> numCollision(ArrayList<Integer> inputIdList) {
   ArrayList<Integer> uniqueList = new ArrayList<Integer>();
 
@@ -188,13 +205,10 @@ public ArrayList<Integer> numCollision(ArrayList<Integer> inputIdList) {
       }
       // insert the id to the correct position to follow the numerical order 
       uniqueList.add(index, num);
-      println(num);
     }
   }
   return uniqueList;
 }
-
-
 
 // check the circle-circle collision
 public boolean circleCircleCollision(Circle circle1, Circle circle2) {
@@ -207,17 +221,15 @@ public boolean circleCircleCollision(Circle circle1, Circle circle2) {
 // check the circle-line collision
 public boolean circleLineCollision(Circle circle, Line line) {
   float d;
-  // Calculate the squared distance from the circle's center to the line segment
+  // get distance from the circle's center to the line segment
   float lineLengthSquared = distSquared(line.x1, line.y1, line.x2,line.y2);
   if (lineLengthSquared == 0) {
-    // The line segment is just a point, so return the squared distance to that point
     d = distSquared(circle.centerX, circle.centerY, line.x1, line.y1);
   }
 
-  // Calculate the t parameter (0 <= t <= 1) for the closest point on the line segment
+  // calculate the t parameter (0 <= t <= 1) for the closest point on the line segment
   float t = ((circle.centerX - line.x1) * (line.x2 - line.x1) + (circle.centerY - line.y1) * (line.y2 - line.y1)) / lineLengthSquared;
-  
-  // Clamp t to ensure it lies within the line segment
+  // clamp t to ensure it lies within the line segment
   t = max(0, min(1, t));
   
   // Calculate the coordinates of the closest point on the line segment
@@ -231,7 +243,7 @@ public boolean circleLineCollision(Circle circle, Line line) {
   return d <= pow(circle.radius, 2);
 }
 
-// Helper function to calculate the squared distance between two points (x1, y1) and (x2, y2).
+// Helper function to calculate the squared distance between two points.
 public float distSquared(float x1, float y1, float x2, float y2) {
   float dx = x2 - x1;
   float dy = y2 - y1;
@@ -250,21 +262,21 @@ public boolean circleBoxCollision(Circle circle, Box box) {
 
 // check line-line collision
 public boolean lineLineCollision(Line line1, Line line2) {
-  float x1 = line1.x1;
-  float y1 = line1.y1;
-  float x2 = line1.x2;
-  float y2 = line1.y2;
+  // float x1 = line1.x1;
+  // float y1 = line1.y1;
+  // float x2 = line1.x2;
+  // float y2 = line1.y2;
   
-  float x3 = line2.x1;
-  float y3 = line2.y1;
-  float x4 = line2.x2;
-  float y4 = line2.y2;
+  // float x3 = line2.x1;
+  // float y3 = line2.y1;
+  // float x4 = line2.x2;
+  // float y4 = line2.y2;
 
   // Calculate the direction vectors of the lines
-  float dx1 = x2 - x1;
-  float dy1 = y2 - y1;
-  float dx2 = x4 - x3;
-  float dy2 = y4 - y3;
+  float dx1 = line1.x2 - line1.x1;
+  float dy1 = line1.y2 - line1.y1;
+  float dx2 = line2.x2 - line2.x1;
+  float dy2 = line2.y2 - line2.y1;
 
   // Calculate the determinant of the direction vectors
   float det = dx1 * dy2 - dx2 * dy1;
@@ -275,8 +287,8 @@ public boolean lineLineCollision(Line line1, Line line2) {
   }
 
   // Calculate parameters for the lines
-  float t1 = ((x3 - x1) * dy2 - (y3 - y1) * dx2) / det;
-  float t2 = ((x3 - x1) * dy1 - (y3 - y1) * dx1) / det;
+  float t1 = ((line2.x1 - line1.x1) * dy2 - (line2.y1 - line1.y1) * dx2) / det;
+  float t2 = ((line2.x1 - line1.x1) * dy1 - (line2.y1 - line1.y1) * dx1) / det;
 
   // Check if the intersection point is within the line segments
   return t1 >= 0 && t1 <= 1 && t2 >= 0 && t2 <= 1;

@@ -12,12 +12,28 @@ void setup() {
   size(800, 800);
   surface.setTitle("Collision Detection Visulaize [CSCI 5611 HW1]");
 
-  String userInput = input("Which task do you wan to solve? ");
-  String inputFile = "./CollisionTasks/task" + userInput + ".txt";
-  String outputFile = "./test_CollisionTasks/task" + userInput + "_solution.txt";
-  readFile(inputFile);
-  ArrayList<Integer> uniqueId = checkCollision();
-  writeFile(outputFile, uniqueId); 
+  String[] FileName = {
+    // "1",
+    // "2",
+    // "3",
+    // "4",
+    // "5",
+    // "6",
+    // "7",
+    // "8",
+    // "9",
+    "10"
+  };
+
+  for (String file : FileName) {
+    String inputFile = "./CollisionTasks/task" + file + ".txt";
+    String outputFile = "./test_CollisionTasks/task" + file + "_solution.txt";
+    readFile(inputFile);
+    ArrayList<Integer> uniqueId = checkCollision();
+    writeFile(outputFile, uniqueId); 
+  } 
+
+  exit();
   
 }
 
@@ -159,6 +175,7 @@ ArrayList<Integer> checkCollision() {
   return uniqueId;
 }
 
+// unique the id list and format that in numerical order
 ArrayList<Integer> numCollision(ArrayList<Integer> inputIdList) {
   ArrayList<Integer> uniqueList = new ArrayList<Integer>();
 
@@ -171,13 +188,10 @@ ArrayList<Integer> numCollision(ArrayList<Integer> inputIdList) {
       }
       // insert the id to the correct position to follow the numerical order 
       uniqueList.add(index, num);
-      println(num);
     }
   }
   return uniqueList;
 }
-
-
 
 // check the circle-circle collision
 boolean circleCircleCollision(Circle circle1, Circle circle2) {
@@ -190,17 +204,15 @@ boolean circleCircleCollision(Circle circle1, Circle circle2) {
 // check the circle-line collision
 boolean circleLineCollision(Circle circle, Line line) {
   float d;
-  // Calculate the squared distance from the circle's center to the line segment
+  // get distance from the circle's center to the line segment
   float lineLengthSquared = distSquared(line.x1, line.y1, line.x2,line.y2);
   if (lineLengthSquared == 0) {
-    // The line segment is just a point, so return the squared distance to that point
     d = distSquared(circle.centerX, circle.centerY, line.x1, line.y1);
   }
 
-  // Calculate the t parameter (0 <= t <= 1) for the closest point on the line segment
+  // calculate the t parameter (0 <= t <= 1) for the closest point on the line segment
   float t = ((circle.centerX - line.x1) * (line.x2 - line.x1) + (circle.centerY - line.y1) * (line.y2 - line.y1)) / lineLengthSquared;
-  
-  // Clamp t to ensure it lies within the line segment
+  // clamp t to ensure it lies within the line segment
   t = max(0, min(1, t));
   
   // Calculate the coordinates of the closest point on the line segment
@@ -214,7 +226,7 @@ boolean circleLineCollision(Circle circle, Line line) {
   return d <= pow(circle.radius, 2);
 }
 
-// Helper function to calculate the squared distance between two points (x1, y1) and (x2, y2).
+// Helper function to calculate the squared distance between two points.
 float distSquared(float x1, float y1, float x2, float y2) {
   float dx = x2 - x1;
   float dy = y2 - y1;
@@ -233,21 +245,11 @@ boolean circleBoxCollision(Circle circle, Box box) {
 
 // check line-line collision
 boolean lineLineCollision(Line line1, Line line2) {
-  float x1 = line1.x1;
-  float y1 = line1.y1;
-  float x2 = line1.x2;
-  float y2 = line1.y2;
-  
-  float x3 = line2.x1;
-  float y3 = line2.y1;
-  float x4 = line2.x2;
-  float y4 = line2.y2;
-
   // Calculate the direction vectors of the lines
-  float dx1 = x2 - x1;
-  float dy1 = y2 - y1;
-  float dx2 = x4 - x3;
-  float dy2 = y4 - y3;
+  float dx1 = line1.x2 - line1.x1;
+  float dy1 = line1.y2 - line1.y1;
+  float dx2 = line2.x2 - line2.x1;
+  float dy2 = line2.y2 - line2.y1;
 
   // Calculate the determinant of the direction vectors
   float det = dx1 * dy2 - dx2 * dy1;
@@ -258,8 +260,8 @@ boolean lineLineCollision(Line line1, Line line2) {
   }
 
   // Calculate parameters for the lines
-  float t1 = ((x3 - x1) * dy2 - (y3 - y1) * dx2) / det;
-  float t2 = ((x3 - x1) * dy1 - (y3 - y1) * dx1) / det;
+  float t1 = ((line2.x1 - line1.x1) * dy2 - (line2.y1 - line1.y1) * dx2) / det;
+  float t2 = ((line2.x1 - line1.x1) * dy1 - (line2.y1 - line1.y1) * dx1) / det;
 
   // Check if the intersection point is within the line segments
   return t1 >= 0 && t1 <= 1 && t2 >= 0 && t2 <= 1;
@@ -284,9 +286,9 @@ boolean lineBoxCollision(Line line, Box box) {
   if (line.y1 < yMin && line.y2 < yMin) return false;
   if (line.y1 > yMax && line.y2 > yMax) return false;
 
-  // Check if the line starts inside the box
-  if ((line.x1 >= xMin && line.x1 <= xMax && line.y1 >= yMin && line.y1 <= yMax) || // Start point is inside the box
-      (line.x2 >= xMin && line.x2 <= xMax && line.y2 >= yMin && line.y2 <= yMax)) { // Intersects right edge
+  // Check if the line starts or end inside the box
+  if ((line.x1 >= xMin && line.x1 <= xMax && line.y1 >= yMin && line.y1 <= yMax) || 
+      (line.x2 >= xMin && line.x2 <= xMax && line.y2 >= yMin && line.y2 <= yMax)) { 
     return true;
   }
 
@@ -328,21 +330,16 @@ void readFile(String inputFilePath) {
       String[] parts = line.split("[\\s:]+");
 
       if (parts.length == 2) {
-        // println(parts);
         dataType = parts[0];
         count = int(parts[1]);
-        // println(dataType, num);
-      } else if (dataType != null && !parts[0].equals("#")) {
+      } else if (dataType != null && !parts[0].equals("#")) { // ignore the text hint here
         if (dataType.equals("Circles") && parts.length == 4) {
-          // println(parts);
           Circle circleShape = new Circle(int(parts[0]), float(parts[1]), float(parts[2]), float(parts[3]));
           circles.add(circleShape);
         } else if (dataType.equals("Lines") && parts.length == 5) {
-          // println(parts);
           Line lineShape = new Line(int(parts[0]), float(parts[1]), float(parts[2]), float(parts[3]), float(parts[4]));
           lines.add(lineShape);
         } else if (dataType.equals("Boxes") && parts.length == 5){
-          // println(parts);  
           Box boxShape = new Box(int(parts[0]), float(parts[1]), float(parts[2]), float(parts[3]), float(parts[4]));
           boxes.add(boxShape);
         } else {
@@ -363,7 +360,6 @@ void writeFile(String outputFilePath, ArrayList<Integer> uniqueId) {
   PrintWriter writer = createWriter(outputFilePath);
   writer.println("Duration: " + duration + "ms");
   writer.println("Num Collisions: " + uniqueId.size());
-  // println("Cirlce-cirlce collision: " + ccUniqueId.size());
     for (Integer i : uniqueId) {
       writer.println(i);
     }
