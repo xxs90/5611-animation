@@ -12,15 +12,12 @@ void setup() {
   size(800, 800);
   surface.setTitle("Collision Detection Visulaize [CSCI 5611 HW1]");
 
-  for (int n = 0; n < 1; n++) {
-    // String inputFile = "./test_CollisionTasks/task" + str(n+1) + ".txt";
-    // String outputFile = "./test_CollisionTasks/task" + str(n+1) + "_solution.txt";
-    String inputFile = "./CollisionTasks/task10.txt";
-    String outputFile = "./test_CollisionTasks/task10_solution.txt";
-    readFile(inputFile);
-    ArrayList<Integer> uniqueId = checkCollision();
-    writeFile(outputFile, uniqueId);
-  }  
+  String userInput = input("Which task do you wan to solve? ");
+  String inputFile = "./CollisionTasks/task" + userInput + ".txt";
+  String outputFile = "./test_CollisionTasks/task" + userInput + "_solution.txt";
+  readFile(inputFile);
+  ArrayList<Integer> uniqueId = checkCollision();
+  writeFile(outputFile, uniqueId); 
   
 }
 
@@ -164,11 +161,17 @@ ArrayList<Integer> checkCollision() {
 
 ArrayList<Integer> numCollision(ArrayList<Integer> inputIdList) {
   ArrayList<Integer> uniqueList = new ArrayList<Integer>();
-  
+
   for (Integer num : inputIdList) {
     // If the element is not already in the unique list, add it
     if (!uniqueList.contains(num)) {
-      uniqueList.add(num);
+      int index = 0;
+      while (index < uniqueList.size() && uniqueList.get(index) < num) {
+        index ++;
+      }
+      // insert the id to the correct position to follow the numerical order 
+      uniqueList.add(index, num);
+      println(num);
     }
   }
   return uniqueList;
