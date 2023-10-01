@@ -1,4 +1,4 @@
 .vscode/*
-out/*
-out/source/*
+out/
 test_CollisionTasks/
+old_solutions/

@@ -27,7 +27,7 @@ void setup() {
 
   for (String file : FileName) {
     String inputFile = "./CollisionTasks/task" + file + ".txt";
-    String outputFile = "./test_CollisionTasks/task" + file + "_solution.txt";
+    String outputFile = "./solutions/task" + file + "_solution.txt";
     readFile(inputFile);
     ArrayList<Integer> uniqueId = checkCollision();
     writeFile(outputFile, uniqueId); 
@@ -358,7 +358,7 @@ void readFile(String inputFilePath) {
 // write file function
 void writeFile(String outputFilePath, ArrayList<Integer> uniqueId) {
   PrintWriter writer = createWriter(outputFilePath);
-  writer.println("Duration: " + duration + "ms");
+  writer.println("Duration: " + duration + " ms");
   writer.println("Num Collisions: " + uniqueId.size());
     for (Integer i : uniqueId) {
       writer.println(i);

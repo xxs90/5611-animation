@@ -1,4 +1,4 @@
-Duration: 0.018699999898672104ms
+Duration: 0.017799999564886093 ms
 Num Collisions: 2
 0
 1
