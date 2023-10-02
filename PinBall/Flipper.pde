@@ -36,40 +36,43 @@ public class Flipper {
   }
 
   // write a rotate function using matrix transformation for the line segment.
-  void rotateObject() {
+  void rotateRObject() {
     if (angle < 50){
-      Vec2 v = new Vec2(x2 - x1, y2 - y1);
-      float length = v.mag();
-      jitter_current = jitter;
-      v.x = v.x * cos(jitter_current) - v.y * sin(jitter_current);
-      v.y = v.x * sin(jitter_current) + v.y * cos(jitter_current);
-      x2 = x1 + v.normalize().mult(length).x;
-      y2 = y1 + v.normalize().mult(length).y;
       angle += 1;
+			jitter_current = jitter;
       // println(angle);
+    } else {
+			jitter_current = 0;
     }
-    if (angle == 50){
-      jitter_current = 0;
-    }
-    // calculate the transform matrix for the line segment and apply it to the line segment.
-  }
+		
+		// Apply jitter to the line segment
+		Vec2 v = new Vec2(x2 - x1, y2 - y1);
+		float length = v.mag();
+		
+		v.x = v.x * cos(jitter_current) - v.y * sin(jitter_current);
+		v.y = v.x * sin(jitter_current) + v.y * cos(jitter_current);
+		x2 = x1 + v.normalize().mult(length).x;
+		y2 = y1 + v.normalize().mult(length).y;
+	}
 
-  void rotateObjectBack() {
+  void rotateRObjectBack() {
     if (angle > 0){
-      Vec2 v = new Vec2(x2 - x1, y2 - y1);
-      float length = v.mag();
+    	angle -= 2;
       jitter_current = -2*jitter;
-      v.x = v.x * cos(jitter_current) - v.y * sin(jitter_current);
-      v.y = v.x * sin(jitter_current) + v.y * cos(jitter_current);
-      x2 = x1 + v.normalize().mult(length).x;
-      y2 = y1 + v.normalize().mult(length).y;
-      angle -= 2;
+    } else {
+			jitter_current = 0;
     }
-    if (angle == 0){
-      jitter_current = 0;
-    }
-    // calculate the transform matrix for the line segment and apply it to the line segment.
+		
+		Vec2 v = new Vec2(x2 - x1, y2 - y1);
+  	float length = v.mag();
+		
+		v.x = v.x * cos(jitter_current) - v.y * sin(jitter_current);
+    v.y = v.x * sin(jitter_current) + v.y * cos(jitter_current);
+    x2 = x1 + v.normalize().mult(length).x;
+    y2 = y1 + v.normalize().mult(length).y;
   }
+	
+	
 
   
   // void flipPaddle() {

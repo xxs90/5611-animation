@@ -10,7 +10,7 @@ ArrayList<Ball> circles = new ArrayList<Ball>();
 ArrayList<Ball> balls = new ArrayList<Ball>();
 ArrayList<Box> blocks = new ArrayList<Box>();
 
-int ballNumber = 3;
+int ballNumber = 1;
 int lives = ballNumber;
 int blockNumber = ballNumber;
 
@@ -27,7 +27,7 @@ int boxWidthLimit = 100;
 int boxHeightLimit = 50;
 
 int width = 800;
-int height = 600;
+int height = 1000;
 int minX = 10;
 int minY = 10;
 int maxX = width - minX;
@@ -38,7 +38,7 @@ boolean startGame = false;
 boolean endGame = false;
 
 void setup() {
-  size(800, 600);
+  size(800, 1000);
 
 	// Load background images from a directory (you can customize this part)
 	File folder = new File(sketchPath("./backgrounds/")); // Replace with your folder path
@@ -53,7 +53,7 @@ void setup() {
 	}
 
 	for (int i = 0; i < ballNumber; i++) {
-		balls.add(new Ball(random(minX, maxX), random(minY + 20, height/2), 0, -2, ballsize));
+		balls.add(new Ball(random(minX, maxX), 50, 0, 2, ballsize));
 	}
 	for (int i = 0; i < blockNumber; i++) {
 		blocks.add(new Box(random(minX, maxX-5), random(minY, maxY-5), 10, 10, 0));
@@ -78,8 +78,8 @@ void setup() {
 	walls.add(wall2);
 	
 	paddleX = (width - paddleWidth) / 2;
-	flipperL = new Flipper(width*1.5/6, maxY+20, width*2.5/6, maxY+60, PI/120);
-	flipperR = new Flipper(width*4.5/6, maxY+20, width*3.5/6, maxY+60, PI/120);
+	flipperL = new Flipper(width*1.5/6, maxY+20, width*2.75/6, maxY+60, PI/120);
+	flipperR = new Flipper(width*4.5/6, maxY+20, width*3.25/6, maxY+60, PI/120);
    
 }
 
@@ -105,7 +105,11 @@ void draw() {
 			// Draw balls
 			for (int i = 0; i < balls.size(); i++) {
 				Ball ball = balls.get(i);
+				// println("Speed x " + ball.speedX);
+				// println("Speed y " + ball.speedY);
 				ball.move();
+				// println("New Speed x " + ball.speedX);
+				// println("New Speed y " + ball.speedY);
 
 				// Check for collisions
 				for (int j = 0; j < balls.size(); j++) {
@@ -123,7 +127,8 @@ void draw() {
 				}
 				
 				for (Line wall : walls) {
-					ball.checkCollision(wall);
+					println("Before hit wall: x: " + ball.speedX + " m/s, y: " + ball.speedY + "m/s");
+					ball.checkCollisionWithWall(wall);
 				}
 				
 				ball.checkCollision(flipperL);
@@ -155,7 +160,7 @@ void draw() {
 			// Draw flippers
 			if (!keyPressed){
 				flipperL.rotateObjectBack();
-				flipperR.rotateObjectBack();
+				flipperR.rotateRObjectBack();
 			}
 			flipperL.display();
 			flipperR.display();
@@ -188,7 +193,7 @@ void keyPressed() {
     flipperL.rotateObject();
   }// if the key 'z' is pressed, rotate the paddle.
 	else if (keyCode == RIGHT) {
-		flipperR.rotateObject();
+		flipperR.rotateRObject();
 	}
   else if (key == 'y' || key == 'Y') {
     showBackground = true;

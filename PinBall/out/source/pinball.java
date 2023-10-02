@@ -29,7 +29,7 @@ ArrayList<Ball> circles = new ArrayList<Ball>();
 ArrayList<Ball> balls = new ArrayList<Ball>();
 ArrayList<Box> blocks = new ArrayList<Box>();
 
-int ballNumber = 3;
+int ballNumber = 1;
 int lives = ballNumber;
 int blockNumber = ballNumber;
 
@@ -46,7 +46,7 @@ int boxWidthLimit = 100;
 int boxHeightLimit = 50;
 
 int width = 800;
-int height = 600;
+int height = 1000;
 int minX = 10;
 int minY = 10;
 int maxX = width - minX;
@@ -72,7 +72,7 @@ public void setup() {
 	}
 
 	for (int i = 0; i < ballNumber; i++) {
-		balls.add(new Ball(random(minX, maxX), random(minY + 20, height/2), 0, -2, ballsize));
+		balls.add(new Ball(random(minX, maxX), 50, 0, 2, ballsize));
 	}
 	for (int i = 0; i < blockNumber; i++) {
 		blocks.add(new Box(random(minX, maxX-5), random(minY, maxY-5), 10, 10, 0));
@@ -97,8 +97,8 @@ public void setup() {
 	walls.add(wall2);
 	
 	paddleX = (width - paddleWidth) / 2;
-	flipperL = new Flipper(width*1.5f/6, maxY+20, width*2.5f/6, maxY+60, PI/120);
-	flipperR = new Flipper(width*4.5f/6, maxY+20, width*3.5f/6, maxY+60, PI/120);
+	flipperL = new Flipper(width*1.5f/6, maxY+20, width*2.75f/6, maxY+60, PI/120);
+	flipperR = new Flipper(width*3.25f/6, maxY+60, width*4.5f/6, maxY+20, PI/120);
    
 }
 
@@ -124,7 +124,11 @@ public void draw() {
 			// Draw balls
 			for (int i = 0; i < balls.size(); i++) {
 				Ball ball = balls.get(i);
+				// println("Speed x " + ball.speedX);
+				// println("Speed y " + ball.speedY);
 				ball.move();
+				// println("New Speed x " + ball.speedX);
+				// println("New Speed y " + ball.speedY);
 
 				// Check for collisions
 				for (int j = 0; j < balls.size(); j++) {
@@ -142,7 +146,8 @@ public void draw() {
 				}
 				
 				for (Line wall : walls) {
-					ball.checkCollision(wall);
+					println("Before hit wall: x: " + ball.speedX + " m/s, y: " + ball.speedY + "m/s");
+					ball.checkCollisionWithWall(wall);
 				}
 				
 				ball.checkCollision(flipperL);
@@ -249,21 +254,25 @@ public class Ball {
 	public void move() {
 		x += speedX;
 		y += speedY;
+		// println("Speed x" + x);
+		// println("Speed y" + y);
 	}
 
-	public void checkCollision() {
-		if (x < minX || x > maxX) {
-			speedX *= -1;
-		}
+	// void checkCollision() {
+	// 	if (x < minX || x > maxX) {
+	// 		speedX *= -1;
+	// 	}
 			
-		if (y < minY) {
-			speedY *= -1;
-		}
+	// 	if (y < minY) {
+	// 		// speedY *= -1;
+	// 		speedY *= 1;
+	// 	}
 			
-		if (y > height - minY - paddleHeight && x > paddleX && x < paddleX + paddleWidth) {
-			speedY *= -1;
-		}
-	}
+	// 	if (y > height - minY - paddleHeight && x > paddleX && x < paddleX + paddleWidth) {
+	// 		// speedY *= -1;
+	// 		speedY *= 1;
+	// 	}
+	// }
 
 	// check the collision between the ball and the other Rectangle.
 	public void checkCollision(Box r) {
@@ -272,11 +281,12 @@ public class Ball {
 		Line bottom = new Line(r.x, r.y + r.height, r.x + r.width, r.y + r.height);
 		Line left = new Line(r.x, r.y, r.x, r.y + r.height);
 		Line right = new Line(r.x + r.width, r.y, r.x + r.width, r.y + r.height);
-		if (checkCollision(top) || checkCollision(bottom) || checkCollision(left) || checkCollision(right)) {
+		if (checkCollisionWithWall(top) || checkCollisionWithWall(bottom) || checkCollisionWithWall(left) || checkCollisionWithWall(right)) {
 			score += 5;
 			return;
 		}
 	}
+
 	// check the collision between two balls by commparing the distance between the centers of the two balls and the sum of their radius.
 	public void checkCollisionBalls(Ball b) {
 		Vec2 distance_v = new Vec2(x - b.x, y - b.y);
@@ -331,85 +341,114 @@ public class Ball {
 			float pushX = (overlap / 2.0f) * nx;
 			float pushY = (overlap / 2.0f) * ny;
 
-			x += pushX;
-			y += pushY;
+			speedX += pushX;
+			speedY += pushY * 1.2f;
 
 			score += 1;
 		}
 	}
 
-	// check the collision between the ball and the line segment.
-	public boolean checkCollision(Line l){
-		float dx = l.x2 - l.x1;
-		float dy = l.y2 - l.y1;
-		double d = Math.sqrt(dx * dx + dy * dy);
-		float u = ((x - l.x1) * dx + (y - l.y1) * dy) / ((float)d * (float)d);
-		if (u > 1) {
+	public boolean checkCollisionWithWall(Line l){
+		float damping = 0.5f;
+    // Calculate the vector components of the line segment
+    float dx = l.x2 - l.x1;
+    float dy = l.y2 - l.y1;
+
+    // Calculate the length of the line segment
+    double d = Math.sqrt(dx * dx + dy * dy);
+
+    // Calculate the parameter 'u' that determines the closest point on the line to the ball
+    float u = ((x - l.x1) * dx + (y - l.y1) * dy) / ((float)d * (float)d);
+    
+    // Clamp 'u' to the range [0, 1] to ensure it's within the line segment
+    if (u > 1) {
 			u = 1;
-		} else if (u < 0) {
+    } else if (u < 0) {
 			u = 0;
-		}
-		float closestX = l.x1 + u * dx;
-		float closestY = l.y1 + u * dy;
-		float distanceX = closestX - x;
-		float distanceY = closestY - y;
-		double distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-		if (distance <= radius) {
-			// calculate the reflecting velocity of the ball.
-			Vec2 v = new Vec2(speedX, speedY);
-			Vec2 n = new Vec2((float)distanceX, (float)distanceY).normalize();
-			Vec2 r = v.sub(n.mult(2 * v.dot(n)));
+    }
+
+    // Calculate the coordinates of the closest point on the line
+    float closestX = l.x1 + u * dx;
+    float closestY = l.y1 + u * dy;
+
+    // Calculate the distance between the ball's center and the closest point on the line
+    float distanceX = closestX - x;
+    float distanceY = closestY - y;
+    double distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+
+    // Check if a collision occurs by comparing the distance to the ball's radius
+    if (distance <= radius) {
+			// Calculate the reflecting velocity of the ball
+			Vec2 v = new Vec2(speedX, speedY); // Ball's velocity vector
+			Vec2 n = new Vec2((float)distanceX, (float)distanceY).normalize(); // Normal vector at collision point
+			Vec2 r = v.sub(n.mult(2 * v.dot(n))); // Reflecting velocity
+			
+			// Apply damping to the velocity
+  		r.mult(damping); // Multiply by the damping factor to slow down the ball
+
+			// Update the ball's position to just touch the line
 			x = (float)closestX - (float)distanceX / (float)distance * radius;
 			y = (float)closestY - (float)distanceY / (float)distance * radius;
+			
+			// Update the ball's velocity to the reflecting velocity
 			speedX = r.x;
-			speedY = r.y;
-			// if (l.jitter_current < 0 && l.angle != 50 && l.angle != 0){
-			// 	Vec2 norm_vector = new Vec2(l.y1-l.y2, l.x2-l.x1).normalize();
-			// 	float segment_length = new Vec2(closestX-l.x1, closestY-l.y1).mag();
-			// 	Vec2 linear_velocity = norm_vector.mult(l.jitter_current*segment_length);
-			// 	speedX += linear_velocity.x*1.2;
-			// 	speedY += linear_velocity.y*1.2;
-			// }
-			// return true;
-		}
-		return false;                                                                                                                                                           
+			speedY = r.y + 2;
+    }
+    
+    return false; // This return value may need to be adjusted based on the context of your code
 	}
+
 
 	// Check the collision between the ball and flippers
 	public boolean checkCollision(Flipper flipper){
-		float dx = flipper.x2 - flipper.x1;
-		float dy = flipper.y2 - flipper.y1;
-		double d = Math.sqrt(dx * dx + dy * dy);
-		float u = ((x - flipper.x1) * dx + (y - flipper.y1) * dy) / ((float)d * (float)d);
-		if (u > 1) {
+		float damping = 0.2f;
+		// Calculate the vector components of the line segment
+    float dx = flipper.x2 - flipper.x1;
+    float dy = flipper.y2 - flipper.y1;
+
+    // Calculate the length of the line segment
+    double d = Math.sqrt(dx * dx + dy * dy);
+
+    // Calculate the parameter 'u' that determines the closest point on the line to the ball
+    float u = ((x - flipper.x1) * dx + (y - flipper.y1) * dy) / ((float)d * (float)d);
+    
+    // Clamp 'u' to the range [0, 1] to ensure it's within the line segment
+    if (u > 1) {
 			u = 1;
-		} else if (u < 0) {
+    } else if (u < 0) {
 			u = 0;
-		}
-		float closestX = flipper.x1 + u * dx;
-		float closestY = flipper.y1 + u * dy;
-		float distanceX = closestX - x;
-		float distanceY = closestY - y;
-		double distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-		if (distance <= radius) {
-			// calculate the reflecting velocity of the ball.
-			Vec2 v = new Vec2(speedX, speedY);
-			Vec2 n = new Vec2((float)distanceX, (float)distanceY).normalize();
-			Vec2 r = v.sub(n.mult(2 * v.dot(n)));
+    }
+
+    // Calculate the coordinates of the closest point on the line
+    float closestX = flipper.x1 + u * dx;
+    float closestY = flipper.y1 + u * dy;
+
+    // Calculate the distance between the ball's center and the closest point on the line
+    float distanceX = closestX - x;
+    float distanceY = closestY - y;
+    double distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+
+    // Check if a collision occurs by comparing the distance to the ball's radius
+    if (distance <= radius) {
+			// Calculate the reflecting velocity of the ball
+			Vec2 v = new Vec2(speedX, speedY); // Ball's velocity vector
+			Vec2 n = new Vec2((float)distanceX, (float)distanceY).normalize(); // Normal vector at collision point
+			Vec2 r = v.sub(n.mult(2 * v.dot(n))); // Reflecting velocity
+			
+			// Apply damping to the velocity
+  		r.mult(damping); // Multiply by the damping factor to slow down the ball
+
+			// Update the ball's position to just touch the line
 			x = (float)closestX - (float)distanceX / (float)distance * radius;
 			y = (float)closestY - (float)distanceY / (float)distance * radius;
+			
+			// Update the ball's velocity to the reflecting velocity
 			speedX = r.x;
 			speedY = r.y;
-			if (flipper.jitter_current < 0 && flipper.angle != 50 && flipper.angle != 0){
-				Vec2 norm_vector = new Vec2(flipper.y1-flipper.y2, flipper.x2-flipper.x1).normalize();
-				float segment_length = new Vec2(closestX-flipper.x1, closestY-flipper.y1).mag();
-				Vec2 linear_velocity = norm_vector.mult(flipper.jitter_current*segment_length);
-				speedX += linear_velocity.x*1.2f;
-				speedY += linear_velocity.y*1.2f;
-			}
-			return true;
-		}
-		return false;                                                                                                                                                           
+    }
+    
+    return false; // This return value may need to be adjusted based on the context of your code
+	                                                                                                                                                      
 	}
 
 	public void display() {
@@ -424,12 +463,12 @@ public class Ball {
 		circle(x, y, radius*2);
 	}
 
-	public void reset(float newX, float newY) {
-		x = newX;
-		y = newY;
-		speedX = random(-3, 3);
-		speedY = random(1, 3);
-	}
+	// void reset(float newX, float newY) {
+	// 	x = newX;
+	// 	y = newY;
+	// 	speedX = random(-3, 3);
+	// 	speedY = random(1, 3);
+	// }
 }
 public class Box {
   float x, y;
@@ -499,38 +538,41 @@ public class Flipper {
   // write a rotate function using matrix transformation for the line segment.
   public void rotateObject() {
     if (angle < 50){
-      Vec2 v = new Vec2(x2 - x1, y2 - y1);
-      float length = v.mag();
-      jitter_current = jitter;
-      v.x = v.x * cos(jitter_current) - v.y * sin(jitter_current);
-      v.y = v.x * sin(jitter_current) + v.y * cos(jitter_current);
-      x2 = x1 + v.normalize().mult(length).x;
-      y2 = y1 + v.normalize().mult(length).y;
       angle += 1;
+			jitter_current = jitter;
       // println(angle);
+    } else {
+			jitter_current = 0;
     }
-    if (angle == 50){
-      jitter_current = 0;
-    }
-    // calculate the transform matrix for the line segment and apply it to the line segment.
-  }
+		
+		// Apply jitter to the line segment
+		Vec2 v = new Vec2(x2 - x1, y2 - y1);
+		float length = v.mag();
+		
+		v.x = v.x * cos(jitter_current) - v.y * sin(jitter_current);
+		v.y = v.x * sin(jitter_current) + v.y * cos(jitter_current);
+		x2 = x1 + v.normalize().mult(length).x;
+		y2 = y1 + v.normalize().mult(length).y;
+	}
 
   public void rotateObjectBack() {
     if (angle > 0){
-      Vec2 v = new Vec2(x2 - x1, y2 - y1);
-      float length = v.mag();
+    	angle -= 2;
       jitter_current = -2*jitter;
-      v.x = v.x * cos(jitter_current) - v.y * sin(jitter_current);
-      v.y = v.x * sin(jitter_current) + v.y * cos(jitter_current);
-      x2 = x1 + v.normalize().mult(length).x;
-      y2 = y1 + v.normalize().mult(length).y;
-      angle -= 2;
+    } else {
+			jitter_current = 0;
     }
-    if (angle == 0){
-      jitter_current = 0;
-    }
-    // calculate the transform matrix for the line segment and apply it to the line segment.
+		
+		Vec2 v = new Vec2(x2 - x1, y2 - y1);
+  	float length = v.mag();
+		
+		v.x = v.x * cos(jitter_current) - v.y * sin(jitter_current);
+    v.y = v.x * sin(jitter_current) + v.y * cos(jitter_current);
+    x2 = x1 + v.normalize().mult(length).x;
+    y2 = y1 + v.normalize().mult(length).y;
   }
+	
+	
 
   
   // void flipPaddle() {
@@ -635,7 +677,7 @@ class Vec2 {
 }
 
 
-  public void settings() { size(800, 600); }
+  public void settings() { size(800, 1000); }
 
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "pinball" };
