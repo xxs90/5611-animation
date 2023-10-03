@@ -1,1 +1,0 @@
-See at project page: https://sites.google.com/view/pinball-xxs90.

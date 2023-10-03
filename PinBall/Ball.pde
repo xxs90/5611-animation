@@ -13,7 +13,8 @@ public class Ball {
 
 	void move() {
 		x += speedX;
-		y += speedY;
+		speedY += gravity;
+		y += (speedY + 1);
 		// println("Speed x" + x);
 		// println("Speed y" + y);
 	}
@@ -35,7 +36,7 @@ public class Ball {
 	// }
 
 	// check the collision between the ball and the other Rectangle.
-	void checkCollision(Box r) {
+	void checkCollisionWithBox(Box r) {
 		// check if the ball intersects with the for sides of the rectangle
 		Line top = new Line(r.x, r.y, r.x + r.width, r.y);
 		Line bottom = new Line(r.x, r.y + r.height, r.x + r.width, r.y + r.height);
@@ -90,7 +91,7 @@ public class Ball {
 
 			// Calculate impulse (change in velocity)
 			float impulseX = 2.0 * dotProduct * nx;
-			float impulseY = 2.0 * dotProduct * ny;
+			float impulseY = 1.8 * dotProduct * ny;
 
 			// Update the moving ball's velocity
 			speedX -= impulseX;
@@ -102,7 +103,7 @@ public class Ball {
 			float pushY = (overlap / 2.0) * ny;
 
 			speedX += pushX;
-			speedY += pushY * 1.2;
+			speedY += pushY;
 
 			score += 1;
 		}
@@ -143,8 +144,9 @@ public class Ball {
 			Vec2 n = new Vec2((float)distanceX, (float)distanceY).normalize(); // Normal vector at collision point
 			Vec2 r = v.sub(n.mult(2 * v.dot(n))); // Reflecting velocity
 			
-			// Apply damping to the velocity
-  		r.mult(damping); // Multiply by the damping factor to slow down the ball
+			// Apply damping only to the perpendicular component of velocity
+			Vec2 dampingVector = n.mult(-2 * v.dot(n) * (1 - damping));
+  		r.add(dampingVector);
 
 			// Update the ball's position to just touch the line
 			x = (float)closestX - (float)distanceX / (float)distance * radius;
@@ -152,7 +154,7 @@ public class Ball {
 			
 			// Update the ball's velocity to the reflecting velocity
 			speedX = r.x;
-			speedY = r.y + 2;
+			speedY = r.y;
     }
     
     return false; // This return value may need to be adjusted based on the context of your code
@@ -160,8 +162,8 @@ public class Ball {
 
 
 	// Check the collision between the ball and flippers
-	boolean checkCollision(Flipper flipper){
-		float damping = 0.2;
+	boolean checkCollisionWithFlipper(Flipper flipper){
+		float damping = 0.8;
 		// Calculate the vector components of the line segment
     float dx = flipper.x2 - flipper.x1;
     float dy = flipper.y2 - flipper.y1;
@@ -195,8 +197,9 @@ public class Ball {
 			Vec2 n = new Vec2((float)distanceX, (float)distanceY).normalize(); // Normal vector at collision point
 			Vec2 r = v.sub(n.mult(2 * v.dot(n))); // Reflecting velocity
 			
-			// Apply damping to the velocity
-  		r.mult(damping); // Multiply by the damping factor to slow down the ball
+			// Apply damping only to the perpendicular component of velocity
+			Vec2 dampingVector = n.mult(-2 * v.dot(n) * (1 - damping));
+  		r.add(dampingVector);
 
 			// Update the ball's position to just touch the line
 			x = (float)closestX - (float)distanceX / (float)distance * radius;

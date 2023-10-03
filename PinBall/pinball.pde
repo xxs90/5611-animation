@@ -3,14 +3,14 @@ Sound s;
 
 ArrayList<PImage> backgrounds = new ArrayList<PImage>();
 int currentBackgroundIndex = 0;
-boolean showBackground = false;
+boolean showBackground = true;
 
 ArrayList<Line> walls = new ArrayList<Line>();
 ArrayList<Ball> circles = new ArrayList<Ball>();
 ArrayList<Ball> balls = new ArrayList<Ball>();
 ArrayList<Box> blocks = new ArrayList<Box>();
 
-int ballNumber = 1;
+int ballNumber = 5;
 int lives = ballNumber;
 int blockNumber = ballNumber;
 
@@ -37,6 +37,8 @@ int score = 0;
 boolean startGame = false;
 boolean endGame = false;
 
+float gravity = 0.2;
+
 void setup() {
   size(800, 1000);
 
@@ -53,11 +55,11 @@ void setup() {
 	}
 
 	for (int i = 0; i < ballNumber; i++) {
-		balls.add(new Ball(random(minX, maxX), 50, 0, 2, ballsize));
+		balls.add(new Ball(random(minX, maxX), 50, 0, gravity, ballsize));
 	}
-	for (int i = 0; i < blockNumber; i++) {
-		blocks.add(new Box(random(minX, maxX-5), random(minY, maxY-5), 10, 10, 0));
-	}
+	// for (int i = 0; i < blockNumber; i++) {
+	// 	blocks.add(new Box(random(minX, maxX-5), random(minY, maxY-5), 10, 10, 0));
+	// }
 	
 	circles.add(new Ball(width/2, height/5, 0, 0, 120));
 	circles.add(new Ball(width/4, height-200, 0, 0, 60));
@@ -65,6 +67,7 @@ void setup() {
 	Line wallTop = new Line(minX, minY, maxX, minY);
 	walls.add(wallTop);
 	Line wallLeft = new Line(minX, minY, minX, maxY);
+
 	walls.add(wallLeft);
 	Line wallRight = new Line(maxX, minY, maxX, maxY);
 	walls.add(wallRight);
@@ -76,7 +79,7 @@ void setup() {
 	walls.add(wall1);
 	Line wall2 = new Line(width*9/10, height/2, width*7/10, height*3/4);
 	walls.add(wall2);
-	
+
 	paddleX = (width - paddleWidth) / 2;
 	flipperL = new Flipper(width*1.5/6, maxY+20, width*2.75/6, maxY+60, PI/120);
 	flipperR = new Flipper(width*4.5/6, maxY+20, width*3.25/6, maxY+60, PI/120);
@@ -105,11 +108,11 @@ void draw() {
 			// Draw balls
 			for (int i = 0; i < balls.size(); i++) {
 				Ball ball = balls.get(i);
-				// println("Speed x " + ball.speedX);
-				// println("Speed y " + ball.speedY);
+				println("Speed x " + ball.speedX);
+				println("Speed y " + ball.speedY);
 				ball.move();
-				// println("New Speed x " + ball.speedX);
-				// println("New Speed y " + ball.speedY);
+				println("New Speed x " + ball.speedX);
+				println("New Speed y " + ball.speedY);
 
 				// Check for collisions
 				for (int j = 0; j < balls.size(); j++) {
@@ -123,16 +126,16 @@ void draw() {
 				}
 
 				for (Box block : blocks) {
-					ball.checkCollision(block);
+					ball.checkCollisionWithBox(block);
 				}
 				
 				for (Line wall : walls) {
-					println("Before hit wall: x: " + ball.speedX + " m/s, y: " + ball.speedY + "m/s");
+					// println("Before hit wall: x: " + ball.speedX + " m/s, y: " + ball.speedY + "m/s");
 					ball.checkCollisionWithWall(wall);
 				}
 				
-				ball.checkCollision(flipperL);
-				ball.checkCollision(flipperR);
+				ball.checkCollisionWithFlipper(flipperL);
+				ball.checkCollisionWithFlipper(flipperR);
 
 				ball.display();
 
@@ -159,7 +162,7 @@ void draw() {
 
 			// Draw flippers
 			if (!keyPressed){
-				flipperL.rotateObjectBack();
+				flipperL.rotateRObjectBack();
 				flipperR.rotateRObjectBack();
 			}
 			flipperL.display();
@@ -190,7 +193,7 @@ void keyPressed() {
 		startGame = true;
 	}
 	else if (keyCode == LEFT) {
-    flipperL.rotateObject();
+    flipperL.rotateRObject();
   }// if the key 'z' is pressed, rotate the paddle.
 	else if (keyCode == RIGHT) {
 		flipperR.rotateRObject();

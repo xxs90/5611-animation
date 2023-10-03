@@ -15,21 +15,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 
-public class pinball extends PApplet {
+public class PinBall extends PApplet {
 
 
 Sound s;
 
 ArrayList<PImage> backgrounds = new ArrayList<PImage>();
 int currentBackgroundIndex = 0;
-boolean showBackground = false;
+boolean showBackground = true;
 
 ArrayList<Line> walls = new ArrayList<Line>();
 ArrayList<Ball> circles = new ArrayList<Ball>();
 ArrayList<Ball> balls = new ArrayList<Ball>();
 ArrayList<Box> blocks = new ArrayList<Box>();
 
-int ballNumber = 1;
+int ballNumber = 5;
 int lives = ballNumber;
 int blockNumber = ballNumber;
 
@@ -56,6 +56,8 @@ int score = 0;
 boolean startGame = false;
 boolean endGame = false;
 
+float gravity = 0.2f;
+
 public void setup() {
   /* size commented out by preprocessor */;
 
@@ -72,11 +74,11 @@ public void setup() {
 	}
 
 	for (int i = 0; i < ballNumber; i++) {
-		balls.add(new Ball(random(minX, maxX), 50, 0, 2, ballsize));
+		balls.add(new Ball(random(minX, maxX), 50, 0, gravity, ballsize));
 	}
-	for (int i = 0; i < blockNumber; i++) {
-		blocks.add(new Box(random(minX, maxX-5), random(minY, maxY-5), 10, 10, 0));
-	}
+	// for (int i = 0; i < blockNumber; i++) {
+	// 	blocks.add(new Box(random(minX, maxX-5), random(minY, maxY-5), 10, 10, 0));
+	// }
 	
 	circles.add(new Ball(width/2, height/5, 0, 0, 120));
 	circles.add(new Ball(width/4, height-200, 0, 0, 60));
@@ -84,6 +86,7 @@ public void setup() {
 	Line wallTop = new Line(minX, minY, maxX, minY);
 	walls.add(wallTop);
 	Line wallLeft = new Line(minX, minY, minX, maxY);
+
 	walls.add(wallLeft);
 	Line wallRight = new Line(maxX, minY, maxX, maxY);
 	walls.add(wallRight);
@@ -95,10 +98,10 @@ public void setup() {
 	walls.add(wall1);
 	Line wall2 = new Line(width*9/10, height/2, width*7/10, height*3/4);
 	walls.add(wall2);
-	
+
 	paddleX = (width - paddleWidth) / 2;
 	flipperL = new Flipper(width*1.5f/6, maxY+20, width*2.75f/6, maxY+60, PI/120);
-	flipperR = new Flipper(width*3.25f/6, maxY+60, width*4.5f/6, maxY+20, PI/120);
+	flipperR = new Flipper(width*4.5f/6, maxY+20, width*3.25f/6, maxY+60, PI/120);
    
 }
 
@@ -124,11 +127,11 @@ public void draw() {
 			// Draw balls
 			for (int i = 0; i < balls.size(); i++) {
 				Ball ball = balls.get(i);
-				// println("Speed x " + ball.speedX);
-				// println("Speed y " + ball.speedY);
+				println("Speed x " + ball.speedX);
+				println("Speed y " + ball.speedY);
 				ball.move();
-				// println("New Speed x " + ball.speedX);
-				// println("New Speed y " + ball.speedY);
+				println("New Speed x " + ball.speedX);
+				println("New Speed y " + ball.speedY);
 
 				// Check for collisions
 				for (int j = 0; j < balls.size(); j++) {
@@ -142,16 +145,16 @@ public void draw() {
 				}
 
 				for (Box block : blocks) {
-					ball.checkCollision(block);
+					ball.checkCollisionWithBox(block);
 				}
 				
 				for (Line wall : walls) {
-					println("Before hit wall: x: " + ball.speedX + " m/s, y: " + ball.speedY + "m/s");
+					// println("Before hit wall: x: " + ball.speedX + " m/s, y: " + ball.speedY + "m/s");
 					ball.checkCollisionWithWall(wall);
 				}
 				
-				ball.checkCollision(flipperL);
-				ball.checkCollision(flipperR);
+				ball.checkCollisionWithFlipper(flipperL);
+				ball.checkCollisionWithFlipper(flipperR);
 
 				ball.display();
 
@@ -178,8 +181,8 @@ public void draw() {
 
 			// Draw flippers
 			if (!keyPressed){
-				flipperL.rotateObjectBack();
-				flipperR.rotateObjectBack();
+				flipperL.rotateRObjectBack();
+				flipperR.rotateRObjectBack();
 			}
 			flipperL.display();
 			flipperR.display();
@@ -209,10 +212,10 @@ public void keyPressed() {
 		startGame = true;
 	}
 	else if (keyCode == LEFT) {
-    flipperL.rotateObject();
+    flipperL.rotateRObject();
   }// if the key 'z' is pressed, rotate the paddle.
 	else if (keyCode == RIGHT) {
-		flipperR.rotateObject();
+		flipperR.rotateRObject();
 	}
   else if (key == 'y' || key == 'Y') {
     showBackground = true;
@@ -253,7 +256,8 @@ public class Ball {
 
 	public void move() {
 		x += speedX;
-		y += speedY;
+		speedY += gravity;
+		y += (speedY + 1);
 		// println("Speed x" + x);
 		// println("Speed y" + y);
 	}
@@ -275,7 +279,7 @@ public class Ball {
 	// }
 
 	// check the collision between the ball and the other Rectangle.
-	public void checkCollision(Box r) {
+	public void checkCollisionWithBox(Box r) {
 		// check if the ball intersects with the for sides of the rectangle
 		Line top = new Line(r.x, r.y, r.x + r.width, r.y);
 		Line bottom = new Line(r.x, r.y + r.height, r.x + r.width, r.y + r.height);
@@ -330,7 +334,7 @@ public class Ball {
 
 			// Calculate impulse (change in velocity)
 			float impulseX = 2.0f * dotProduct * nx;
-			float impulseY = 2.0f * dotProduct * ny;
+			float impulseY = 1.8f * dotProduct * ny;
 
 			// Update the moving ball's velocity
 			speedX -= impulseX;
@@ -342,7 +346,7 @@ public class Ball {
 			float pushY = (overlap / 2.0f) * ny;
 
 			speedX += pushX;
-			speedY += pushY * 1.2f;
+			speedY += pushY;
 
 			score += 1;
 		}
@@ -383,8 +387,9 @@ public class Ball {
 			Vec2 n = new Vec2((float)distanceX, (float)distanceY).normalize(); // Normal vector at collision point
 			Vec2 r = v.sub(n.mult(2 * v.dot(n))); // Reflecting velocity
 			
-			// Apply damping to the velocity
-  		r.mult(damping); // Multiply by the damping factor to slow down the ball
+			// Apply damping only to the perpendicular component of velocity
+			Vec2 dampingVector = n.mult(-2 * v.dot(n) * (1 - damping));
+  		r.add(dampingVector);
 
 			// Update the ball's position to just touch the line
 			x = (float)closestX - (float)distanceX / (float)distance * radius;
@@ -392,7 +397,7 @@ public class Ball {
 			
 			// Update the ball's velocity to the reflecting velocity
 			speedX = r.x;
-			speedY = r.y + 2;
+			speedY = r.y;
     }
     
     return false; // This return value may need to be adjusted based on the context of your code
@@ -400,8 +405,8 @@ public class Ball {
 
 
 	// Check the collision between the ball and flippers
-	public boolean checkCollision(Flipper flipper){
-		float damping = 0.2f;
+	public boolean checkCollisionWithFlipper(Flipper flipper){
+		float damping = 0.8f;
 		// Calculate the vector components of the line segment
     float dx = flipper.x2 - flipper.x1;
     float dy = flipper.y2 - flipper.y1;
@@ -435,8 +440,9 @@ public class Ball {
 			Vec2 n = new Vec2((float)distanceX, (float)distanceY).normalize(); // Normal vector at collision point
 			Vec2 r = v.sub(n.mult(2 * v.dot(n))); // Reflecting velocity
 			
-			// Apply damping to the velocity
-  		r.mult(damping); // Multiply by the damping factor to slow down the ball
+			// Apply damping only to the perpendicular component of velocity
+			Vec2 dampingVector = n.mult(-2 * v.dot(n) * (1 - damping));
+  		r.add(dampingVector);
 
 			// Update the ball's position to just touch the line
 			x = (float)closestX - (float)distanceX / (float)distance * radius;
@@ -536,7 +542,7 @@ public class Flipper {
   }
 
   // write a rotate function using matrix transformation for the line segment.
-  public void rotateObject() {
+  public void rotateRObject() {
     if (angle < 50){
       angle += 1;
 			jitter_current = jitter;
@@ -555,7 +561,7 @@ public class Flipper {
 		y2 = y1 + v.normalize().mult(length).y;
 	}
 
-  public void rotateObjectBack() {
+  public void rotateRObjectBack() {
     if (angle > 0){
     	angle -= 2;
       jitter_current = -2*jitter;
@@ -680,7 +686,7 @@ class Vec2 {
   public void settings() { size(800, 1000); }
 
   static public void main(String[] passedArgs) {
-    String[] appletArgs = new String[] { "pinball" };
+    String[] appletArgs = new String[] { "PinBall" };
     if (passedArgs != null) {
       PApplet.main(concat(appletArgs, passedArgs));
     } else {
