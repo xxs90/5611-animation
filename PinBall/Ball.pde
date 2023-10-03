@@ -106,64 +106,66 @@ public class Ball {
 			speedY += pushY;
 
 			score += 1;
+			
+			hitSound = true;
 		}
 	}
 
 	boolean checkCollisionWithWall(Line l){
-		float damping = 0.5;
-    // Calculate the vector components of the line segment
-    float dx = l.x2 - l.x1;
-    float dy = l.y2 - l.y1;
+		float damping = 0.6;
+		// Calculate the vector components of the line segment
+		float dx = l.x2 - l.x1;
+		float dy = l.y2 - l.y1;
 
-    // Calculate the length of the line segment
-    double d = Math.sqrt(dx * dx + dy * dy);
+		// Calculate the length of the line segment
+		double d = Math.sqrt(dx * dx + dy * dy);
 
-    // Calculate the parameter 'u' that determines the closest point on the line to the ball
-    float u = ((x - l.x1) * dx + (y - l.y1) * dy) / ((float)d * (float)d);
-    
-    // Clamp 'u' to the range [0, 1] to ensure it's within the line segment
-    if (u > 1) {
-			u = 1;
-    } else if (u < 0) {
-			u = 0;
-    }
+		// Calculate the parameter 'u' that determines the closest point on the line to the ball
+		float u = ((x - l.x1) * dx + (y - l.y1) * dy) / ((float)d * (float)d);
+		
+		// Clamp 'u' to the range [0, 1] to ensure it's within the line segment
+		if (u > 1) {
+				u = 1;
+		} else if (u < 0) {
+				u = 0;
+		}
 
-    // Calculate the coordinates of the closest point on the line
-    float closestX = l.x1 + u * dx;
-    float closestY = l.y1 + u * dy;
+		// Calculate the coordinates of the closest point on the line
+		float closestX = l.x1 + u * dx;
+		float closestY = l.y1 + u * dy;
 
-    // Calculate the distance between the ball's center and the closest point on the line
-    float distanceX = closestX - x;
-    float distanceY = closestY - y;
-    double distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+		// Calculate the distance between the ball's center and the closest point on the line
+		float distanceX = closestX - x;
+		float distanceY = closestY - y;
+		double distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
 
-    // Check if a collision occurs by comparing the distance to the ball's radius
-    if (distance <= radius) {
-			// Calculate the reflecting velocity of the ball
-			Vec2 v = new Vec2(speedX, speedY); // Ball's velocity vector
-			Vec2 n = new Vec2((float)distanceX, (float)distanceY).normalize(); // Normal vector at collision point
-			Vec2 r = v.sub(n.mult(2 * v.dot(n))); // Reflecting velocity
-			
-			// Apply damping only to the perpendicular component of velocity
-			Vec2 dampingVector = n.mult(-2 * v.dot(n) * (1 - damping));
-  		r.add(dampingVector);
+		// Check if a collision occurs by comparing the distance to the ball's radius
+		if (distance <= radius) {
+				// Calculate the reflecting velocity of the ball
+				Vec2 v = new Vec2(speedX, speedY); // Ball's velocity vector
+				Vec2 n = new Vec2((float)distanceX, (float)distanceY).normalize(); // Normal vector at collision point
+				Vec2 r = v.sub(n.mult(2 * v.dot(n))); // Reflecting velocity
+				
+				// Apply damping only to the perpendicular component of velocity
+				Vec2 dampingVector = n.mult(-2 * v.dot(n) * (1 - damping));
+				r.add(dampingVector);
 
-			// Update the ball's position to just touch the line
-			x = (float)closestX - (float)distanceX / (float)distance * radius;
-			y = (float)closestY - (float)distanceY / (float)distance * radius;
-			
-			// Update the ball's velocity to the reflecting velocity
-			speedX = r.x;
-			speedY = r.y;
-    }
-    
-    return false; // This return value may need to be adjusted based on the context of your code
+				// Update the ball's position to just touch the line
+				x = (float)closestX - (float)distanceX / (float)distance * radius;
+				y = (float)closestY - (float)distanceY / (float)distance * radius;
+				
+				// Update the ball's velocity to the reflecting velocity
+				speedX = r.x;
+				speedY = r.y;
+		}
+		
+		return false; // This return value may need to be adjusted based on the context of your code
 	}
 
 
 	// Check the collision between the ball and flippers
 	boolean checkCollisionWithFlipper(Flipper flipper){
-		float damping = 0.8;
+		float damping = 0.6;
 		// Calculate the vector components of the line segment
     float dx = flipper.x2 - flipper.x1;
     float dy = flipper.y2 - flipper.y1;
@@ -215,21 +217,15 @@ public class Ball {
 	}
 
 	void display() {
-		fill(0, 0, 255);
+		fill(25, 175, 155);
 		noStroke();
 		circle(x, y, radius*2);
 	}
 
 	void displayBigBall() {
-		fill(50, 128, 200);
+		fill(120, 175, 70);
 		noStroke();
 		circle(x, y, radius*2);
 	}
 
-	// void reset(float newX, float newY) {
-	// 	x = newX;
-	// 	y = newY;
-	// 	speedX = random(-3, 3);
-	// 	speedY = random(1, 3);
-	// }
 }

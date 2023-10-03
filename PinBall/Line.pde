@@ -13,7 +13,7 @@ public class Line {
   }
 
   void display() {
-    stroke(0, 0, 0);
+    stroke(200, 120, 60);
 		strokeWeight(4);
     line(x1, y1, x2, y2);
   }

@@ -20,8 +20,8 @@ public class Flipper {
   }
 
   void display() {
-    stroke(150, 100, 200);
-	strokeWeight(4);
+    stroke(240, 200, 95);
+	  strokeWeight(4);
     line(x1, y1, x2, y2);
   }
 
