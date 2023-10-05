@@ -19,39 +19,29 @@ public class Ball {
 		// println("Speed y" + y);
 	}
 
-	// void checkCollision() {
-	// 	if (x < minX || x > maxX) {
-	// 		speedX *= -1;
-	// 	}
-			
-	// 	if (y < minY) {
-	// 		// speedY *= -1;
-	// 		speedY *= 1;
-	// 	}
-			
-	// 	if (y > height - minY - paddleHeight && x > paddleX && x < paddleX + paddleWidth) {
-	// 		// speedY *= -1;
-	// 		speedY *= 1;
-	// 	}
-	// }
-
 	// check the collision between the ball and the other Rectangle.
-	void checkCollisionWithBox(Box r) {
+	int checkCollisionWithBox(Box r) {
 		// check if the ball intersects with the for sides of the rectangle
 		Line top = new Line(r.x, r.y, r.x + r.width, r.y);
 		Line bottom = new Line(r.x, r.y + r.height, r.x + r.width, r.y + r.height);
 		Line left = new Line(r.x, r.y, r.x, r.y + r.height);
 		Line right = new Line(r.x + r.width, r.y, r.x + r.width, r.y + r.height);
+
 		if (checkCollisionWithWall(top) || checkCollisionWithWall(bottom) || checkCollisionWithWall(left) || checkCollisionWithWall(right)) {
 			score += 5;
-			return;
+			hitBlock += 1;
 		}
+
+		return hitBlock;
 	}
 
 	// check the collision between two balls by commparing the distance between the centers of the two balls and the sum of their radius.
 	void checkCollisionBalls(Ball b) {
+		float restitution = 0.8;
+
 		Vec2 distance_v = new Vec2(x - b.x, y - b.y);
-		float distance = distance_v.mag();
+		float distance = distance_v.magnitude();
+
 		if (distance <= radius + b.radius) {
 			float r = radius + b.radius;
 			Vec2 mid = new Vec2((x + b.x) / 2, (y + b.y) / 2);
@@ -70,18 +60,20 @@ public class Ball {
 			Vec2 r2 = v2.sub(n.mult(2 * v2.dot(n)));
 			speedX = r1.x;
 			speedY = r1.y;
-			b.speedX = r2.x;
-			b.speedY = r2.y;
+			b.speedX = r2.x * restitution;
+			b.speedY = r2.y * restitution;
 		}
 	}
 
 	// check the collision between stationary ball and moving ball.
-	void checkCollisionWithStaticBall(Ball ball) {
+	int checkCollisionWithStaticBall(Ball ball) {
 		float dx = x - ball.x;
 		float dy = y - ball.y;
 		float distance = sqrt(dx * dx + dy * dy);
 
 		if (distance <= radius + ball.radius) {
+			playerPing.play();
+
 			// Calculate the collision normal (unit vector pointing from stationaryBall to movingBall)
 			float nx = dx / distance;
 			float ny = dy / distance;
@@ -90,8 +82,8 @@ public class Ball {
 			float dotProduct = speedX * nx + speedY * ny;
 
 			// Calculate impulse (change in velocity)
-			float impulseX = 2.0 * dotProduct * nx;
-			float impulseY = 1.8 * dotProduct * ny;
+			float impulseX = 1.6 * dotProduct * nx;
+			float impulseY = 1.6 * dotProduct * ny;
 
 			// Update the moving ball's velocity
 			speedX -= impulseX;
@@ -106,9 +98,9 @@ public class Ball {
 			speedY += pushY;
 
 			score += 1;
-			
-			hitSound = true;
+			hitCircle += 1;
 		}
+		return hitCircle;
 	}
 
 	boolean checkCollisionWithWall(Line l){
@@ -118,17 +110,13 @@ public class Ball {
 		float dy = l.y2 - l.y1;
 
 		// Calculate the length of the line segment
-		double d = Math.sqrt(dx * dx + dy * dy);
+		double d = sqrt(dx * dx + dy * dy);
 
 		// Calculate the parameter 'u' that determines the closest point on the line to the ball
 		float u = ((x - l.x1) * dx + (y - l.y1) * dy) / ((float)d * (float)d);
 		
 		// Clamp 'u' to the range [0, 1] to ensure it's within the line segment
-		if (u > 1) {
-				u = 1;
-		} else if (u < 0) {
-				u = 0;
-		}
+  	u = constrain(u, 0, 1);
 
 		// Calculate the coordinates of the closest point on the line
 		float closestX = l.x1 + u * dx;
@@ -137,63 +125,10 @@ public class Ball {
 		// Calculate the distance between the ball's center and the closest point on the line
 		float distanceX = closestX - x;
 		float distanceY = closestY - y;
-		double distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+		double distance = sqrt(distanceX * distanceX + distanceY * distanceY);
 
 		// Check if a collision occurs by comparing the distance to the ball's radius
 		if (distance <= radius) {
-				// Calculate the reflecting velocity of the ball
-				Vec2 v = new Vec2(speedX, speedY); // Ball's velocity vector
-				Vec2 n = new Vec2((float)distanceX, (float)distanceY).normalize(); // Normal vector at collision point
-				Vec2 r = v.sub(n.mult(2 * v.dot(n))); // Reflecting velocity
-				
-				// Apply damping only to the perpendicular component of velocity
-				Vec2 dampingVector = n.mult(-2 * v.dot(n) * (1 - damping));
-				r.add(dampingVector);
-
-				// Update the ball's position to just touch the line
-				x = (float)closestX - (float)distanceX / (float)distance * radius;
-				y = (float)closestY - (float)distanceY / (float)distance * radius;
-				
-				// Update the ball's velocity to the reflecting velocity
-				speedX = r.x;
-				speedY = r.y;
-		}
-		
-		return false; // This return value may need to be adjusted based on the context of your code
-	}
-
-
-	// Check the collision between the ball and flippers
-	boolean checkCollisionWithFlipper(Flipper flipper){
-		float damping = 0.6;
-		// Calculate the vector components of the line segment
-    float dx = flipper.x2 - flipper.x1;
-    float dy = flipper.y2 - flipper.y1;
-
-    // Calculate the length of the line segment
-    double d = Math.sqrt(dx * dx + dy * dy);
-
-    // Calculate the parameter 'u' that determines the closest point on the line to the ball
-    float u = ((x - flipper.x1) * dx + (y - flipper.y1) * dy) / ((float)d * (float)d);
-    
-    // Clamp 'u' to the range [0, 1] to ensure it's within the line segment
-    if (u > 1) {
-			u = 1;
-    } else if (u < 0) {
-			u = 0;
-    }
-
-    // Calculate the coordinates of the closest point on the line
-    float closestX = flipper.x1 + u * dx;
-    float closestY = flipper.y1 + u * dy;
-
-    // Calculate the distance between the ball's center and the closest point on the line
-    float distanceX = closestX - x;
-    float distanceY = closestY - y;
-    double distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-
-    // Check if a collision occurs by comparing the distance to the ball's radius
-    if (distance <= radius) {
 			// Calculate the reflecting velocity of the ball
 			Vec2 v = new Vec2(speedX, speedY); // Ball's velocity vector
 			Vec2 n = new Vec2((float)distanceX, (float)distanceY).normalize(); // Normal vector at collision point
@@ -201,7 +136,7 @@ public class Ball {
 			
 			// Apply damping only to the perpendicular component of velocity
 			Vec2 dampingVector = n.mult(-2 * v.dot(n) * (1 - damping));
-  		r.add(dampingVector);
+			r.add(dampingVector);
 
 			// Update the ball's position to just touch the line
 			x = (float)closestX - (float)distanceX / (float)distance * radius;
@@ -210,11 +145,157 @@ public class Ball {
 			// Update the ball's velocity to the reflecting velocity
 			speedX = r.x;
 			speedY = r.y;
-    }
-    
-    return false; // This return value may need to be adjusted based on the context of your code
-	                                                                                                                                                      
+
+			return true;
+		}
+
+		return false; 
 	}
+
+
+
+	// Check the collision between the ball and flippers
+	void checkCollisionWithFlipperL(FlipperL flipper){
+		float restitution = 0.7;
+
+		Vec2 flipper_base = new Vec2(flipper.x1, flipper.y1);
+		
+		// Find the closest point on the line segment
+  	flipper.x2 = flipper_base.x + flipper.line_length*cos(flipper.angle);
+  	flipper.y2 = flipper_base.y + flipper.line_length*sin(flipper.angle);
+		Vec2 tip = new Vec2(flipper.x2, flipper.y2); 
+
+		Vec2 ball_pos = new Vec2(x, y);
+		Vec2 ball_vel = new Vec2(speedX, speedY);
+
+		// Calculate the vector components of the line segment
+		float dx = flipper.x2 - flipper.x1;
+		float dy = flipper.y2 - flipper.y1;
+
+		// Calculate the length of the line segment
+		double d = sqrt(dx * dx + dy * dy);
+
+		// Calculate the parameter 'u' that determines the closest point on the line to the ball
+		float u = ((x - flipper.x1) * dx + (y - flipper.y1) * dy) / ((float)d * (float)d);
+		
+		// Clamp 'u' to the range [0, 1] to ensure it's within the line segment
+  	u = constrain(u, 0, 1);
+
+		// Calculate the coordinates of the closest point on the line
+		float closestX = flipper.x1 + u * dx;
+		float closestY = flipper.y1 + u * dy;
+		Vec2 closest = new Vec2(closestX, closestY);		
+		
+		// Calculate the distance between the ball's center and the closest point on the line
+		float distanceX = closestX - x;
+		float distanceY = closestY - y;
+		double distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+
+		// Check if a collision occurs by comparing the distance to the ball's radius
+		if (distance <= radius) {
+			// Calculate the reflecting velocity of the ball
+			Vec2 v = new Vec2(speedX, speedY); // Ball's velocity vector
+			Vec2 n = new Vec2((float)distanceX, (float)distanceY).normalize(); // Normal vector at collision point
+			
+			// Update the ball's position to just touch the line
+			x = (float)closestX - (float)distanceX / (float)distance * radius;
+			y = (float)closestY - (float)distanceY / (float)distance * radius;
+
+			// Velocity of the flipper at the point of contact
+			Vec2 flipper_radius = closest.sub(flipper_base);
+			Vec2 surfaceVel = new Vec2(0,0);
+			if (flipper_radius.magnitude() > 0) {
+				surfaceVel = (new Vec2(-flipper_radius.y, flipper_radius.x)).normalize().mult(flipper.angular_velocity * flipper_radius.magnitude());
+			}
+
+			// Calculate the new ball velocity
+			float v_ball = ball_vel.dot(n);
+			float v_flip = surfaceVel.dot(n);
+			float m1 = 1;
+			float m2 = 10; // Give the flipper a big mass compared to the ball 
+
+			// Conservation of momentum
+			float new_v = (m1 * v_ball + m2 * v_flip - m2 * (v_ball - v_flip) * restitution) / (m1 + m2);
+
+			// Update the ball's velocity to the reflecting velocity
+			ball_vel.add(n.mult(new_v - v_ball)); 
+			speedX = -ball_vel.x;
+			speedY = -ball_vel.y;
+		}   
+
+	}
+
+		// Check the collision between the ball and flippers
+	void checkCollisionWithFlipperR(FlipperR flipper){
+		float restitution = 0.7;
+
+		Vec2 flipper_base = new Vec2(flipper.x1, flipper.y1);
+		
+		// Find the closest point on the line segment
+  	flipper.x2 = flipper_base.x + flipper.line_length*cos(flipper.angle);
+  	flipper.y2 = flipper_base.y + flipper.line_length*sin(flipper.angle);
+		Vec2 tip = new Vec2(flipper.x2, flipper.y2); 
+
+		Vec2 ball_pos = new Vec2(x, y);
+		Vec2 ball_vel = new Vec2(speedX, speedY);
+
+		// Calculate the vector components of the line segment
+		float dx = flipper.x2 - flipper.x1;
+		float dy = flipper.y2 - flipper.y1;
+
+		// Calculate the length of the line segment
+		double d = sqrt(dx * dx + dy * dy);
+
+		// Calculate the parameter 'u' that determines the closest point on the line to the ball
+		float u = ((x - flipper.x1) * dx + (y - flipper.y1) * dy) / ((float)d * (float)d);
+		
+		// Clamp 'u' to the range [0, 1] to ensure it's within the line segment
+  	u = constrain(u, 0, 1);
+
+		// Calculate the coordinates of the closest point on the line
+		float closestX = flipper.x1 + u * dx;
+		float closestY = flipper.y1 + u * dy;
+		Vec2 closest = new Vec2(closestX, closestY);		
+		
+		// Calculate the distance between the ball's center and the closest point on the line
+		float distanceX = closestX - x;
+		float distanceY = closestY - y;
+		double distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+
+		// Check if a collision occurs by comparing the distance to the ball's radius
+		if (distance <= radius) {
+			// Calculate the reflecting velocity of the ball
+			Vec2 v = new Vec2(speedX, speedY); // Ball's velocity vector
+			Vec2 n = new Vec2((float)distanceX, (float)distanceY).normalize(); // Normal vector at collision point
+			
+			// Update the ball's position to just touch the line
+			x = (float)closestX - (float)distanceX / (float)distance * radius;
+			y = (float)closestY - (float)distanceY / (float)distance * radius;
+
+			// Velocity of the flipper at the point of contact
+			Vec2 flipper_radius = closest.sub(flipper_base);
+			Vec2 surfaceVel = new Vec2(0,0);
+			if (flipper_radius.magnitude() > 0) {
+				surfaceVel = (new Vec2(-flipper_radius.y, flipper_radius.x)).normalize().mult(flipper.angular_velocity * flipper_radius.magnitude());
+			}
+
+			// Calculate the new ball velocity
+			float v_ball = ball_vel.dot(n);
+			float v_flip = surfaceVel.dot(n);
+			float m1 = 1;
+			float m2 = 10; // Give the flipper a big mass compared to the ball 
+
+			// Conservation of momentum
+			float new_v = (m1 * v_ball + m2 * v_flip - m2 * (v_ball - v_flip) * restitution) / (m1 + m2);
+
+			// Update the ball's velocity to the reflecting velocity
+			ball_vel.add(n.mult(new_v - v_ball)); 
+			speedX = -ball_vel.x;
+			speedY = -ball_vel.y;
+		}   
+		                                                                                                                                        
+	}
+
 
 	void display() {
 		fill(25, 175, 155);
