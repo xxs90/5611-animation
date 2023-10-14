@@ -8,7 +8,8 @@ length_error_lists = []
 
 
 folder_path = ['./data/substeps_1', './data/substeps_10', './data/substeps_100', 
-			   './data/relaxation_steps_10', './data/relaxation_steps_1', './data/relaxation_steps_100' ] 
+			   './data/relaxation_steps_10', './data/relaxation_steps_1', './data/relaxation_steps_100',
+				 './data/all' ] 
 
 for folder in folder_path:
 
@@ -19,7 +20,7 @@ for folder in folder_path:
 	txt_files = [file for file in files if file.endswith('.txt')]
 	print(txt_files)
 
-	fig, axs = plt.subplots(2, 1, figsize=(10, 10))
+	fig, axs = plt.subplots(2, 1, figsize=(15, 15))
 
 	for txt_file in txt_files:
 		relaxation_step = txt_file.split('_')[1]
