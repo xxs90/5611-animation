@@ -1,0 +1,6 @@
+
+newmtl Material
+Ka 0.0 0.0 0.0   // Ambient color (black in this case)
+Kd 0.1804 0.5451 0.3412   // Diffuse color (#2E8B57 in RGB)
+Ks 0.0 0.0 0.0   // Specular color (black in this case)
+Ns 0             // Shininess (0 for no specular highlights)
