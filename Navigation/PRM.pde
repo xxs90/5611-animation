@@ -1,8 +1,8 @@
 //Probablistic Roadmap Class
 class PRM {
   int num;
-  PVector[] mspos;
-  boolean[][] adjacent;
+  PVector[] pos;
+  boolean[][] neighbor;
   float[][] distance;
   float[] heuristic;
 
@@ -12,13 +12,13 @@ class PRM {
     generateRandomPositions();
     addStartAndDestination();
     computeAdjacencyAndDistance();
-    adjustAdjacentNodes();
+    adjustNeighborNodes();
   }
 
   // Initialize arrays
   void initializeArrays() {
-    mspos = new PVector[num + 2];
-    adjacent = new boolean[num + 2][num + 2];
+    pos = new PVector[num + 2];
+    neighbor = new boolean[num + 2][num + 2];
     distance = new float[num + 2][num + 2];
     heuristic = new float[num + 2];
   }
@@ -29,7 +29,7 @@ class PRM {
     for (int i = 1; i < num + 1; i++) {
       PVector randomPos = new PVector(sceneSize * random(-0.5, 0.5), sceneSize * random(-0.5, 0.5));
       randomPos = ensureRobustness(randomPos);
-      mspos[i] = avoidSphericalObstacles(randomPos, r);
+      pos[i] = avoidSphericalObstacles(randomPos, r);
     }
   }
 
@@ -55,8 +55,8 @@ class PRM {
 
   // Add start and destination to the graph
   void addStartAndDestination() {
-    mspos[0] = new PVector(agentPos.x, agentPos.y);
-    mspos[num + 1] = new PVector(goalPos.x, goalPos.y);
+    pos[0] = new PVector(agentPos.x, agentPos.y);
+    pos[num + 1] = new PVector(goalPos.x, goalPos.y);
   }
 
   // Compute adjacency list and edge distance
@@ -68,38 +68,38 @@ class PRM {
       }
       computeStartAndGoalAdjacencyAndDistance(i, r);
     }
-    adjustAdjacentNodes();
+    adjustNeighborNodes();
   }
 
   // Compute adjacency and distance between nodes
   void computeAdjacencyAndDistanceBetweenNodes(int i, int j, float r) {
-    float dis = PVector.sub(mspos[i], mspos[j]).mag();
-    adjacent[i][j] = (j != i) && (adjacent[j][i] || (dis < neighborRadius * sceneSize && accessible(mspos[i], mspos[j], r)));
-    distance[i][j] = (adjacent[i][j]) ? dis : 0;
+    float dis = PVector.sub(pos[i], pos[j]).mag();
+    neighbor[i][j] = (j != i) && (neighbor[j][i] || (dis < neighborRadius * sceneSize && accessible(pos[i], pos[j], r)));
+    distance[i][j] = (neighbor[i][j]) ? dis : 0;
   }
 
   // Compute adjacency and distance for start and goal nodes
   void computeStartAndGoalAdjacencyAndDistance(int i, float r) {
     float dis;
-    heuristic[i] = PVector.sub(goalPos, mspos[i]).mag();
-    if (accessible(mspos[i], agentPos, r)) {
-      dis = PVector.sub(mspos[i], agentPos).mag();
-      adjacent[i][0] = true;
-      adjacent[0][i] = true;
+    heuristic[i] = PVector.sub(goalPos, pos[i]).mag();
+    if (accessible(pos[i], agentPos, r)) {
+      dis = PVector.sub(pos[i], agentPos).mag();
+      neighbor[i][0] = true;
+      neighbor[0][i] = true;
       distance[i][0] = distance[0][i] = dis;
     }
-    if (accessible(mspos[i], goalPos, r)) {
+    if (accessible(pos[i], goalPos, r)) {
       dis = heuristic[i];
-      adjacent[i][num + 1] = true;
-      adjacent[num + 1][i] = true;
+      neighbor[i][num + 1] = true;
+      neighbor[num + 1][i] = true;
       distance[i][num + 1] = distance[num + 1][i] = dis;
     }
   }
 
   // Adjust adjacency for start and goal nodes
-  void adjustAdjacentNodes() {
-    adjacent[0][0] = adjacent[num + 1][num + 1] = false;
-    adjacent[0][num + 1] = adjacent[num + 1][0] = accessible(agentPos, goalPos, obstacleRadius + agentRadius);
+  void adjustNeighborNodes() {
+    neighbor[0][0] = neighbor[num + 1][num + 1] = false;
+    neighbor[0][num + 1] = neighbor[num + 1][0] = accessible(agentPos, goalPos, obstacleRadius + agentRadius);
   }
 }
 
@@ -151,14 +151,14 @@ class SimpleQueue {
 // Path-searching function using BFS 
 ArrayList<Integer> pathSearch() {
   ArrayList<Integer> result = new ArrayList<>();
-  int[] pstep = new int[samples + 2];
+  int[] step = new int[samples + 2];
   SimpleQueue queue = new SimpleQueue();
 
 	// First step
 	for (int i = 1; i < samples + 2; i++) {
-		if (prm.adjacent[0][i]) {
+		if (prm.neighbor[0][i]) {
 			queue.enqueue(i);
-			pstep[i] = -1;
+			step[i] = -1;
 		}
 	}
 
@@ -167,10 +167,10 @@ ArrayList<Integer> pathSearch() {
 		if (current == samples + 1) break;
 		
 		for (int i = 1; i < samples + 2; i++) {
-			if (prm.adjacent[current][i]) {
-				if (pstep[i] == 0) {
+			if (prm.neighbor[current][i]) {
+				if (step[i] == 0) {
 					queue.enqueue(i);
-					pstep[i] = current;
+					step[i] = current;
 				}
 			}
 		}
@@ -179,7 +179,7 @@ ArrayList<Integer> pathSearch() {
 	int tmp = samples + 1;
 	while (tmp != -1) {
 		result.add(0, tmp);
-		tmp = pstep[tmp];
+		tmp = step[tmp];
 	}
 
 	result.add(0, 0);

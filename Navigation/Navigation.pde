@@ -81,11 +81,11 @@ void init() {
 
 void update(float dt){
   if (index < path.size()){ // not reached destination
-    PVector dir = PVector.sub(prm.mspos[path.get(index)], agentPos).normalize();
+    PVector dir = PVector.sub(prm.pos[path.get(index)], agentPos).normalize();
     agentPos.add(PVector.mult(dir,velocity*dt));
-    if (PVector.sub(prm.mspos[path.get(index)], agentPos).mag()<0.05 ||
+    if (PVector.sub(prm.pos[path.get(index)], agentPos).mag()<0.05 ||
     (index < path.size()-1 &&
-    accessible(agentPos, prm.mspos[path.get(index+1)],obstacleRadius+agentRadius)))
+    accessible(agentPos, prm.pos[path.get(index+1)],obstacleRadius+agentRadius)))
     index++;
   }
 }
@@ -128,7 +128,7 @@ void draw() {
 	// Agent Visualization
 	PVector dir;
 	if (index < path.size()-1) {
-		dir = PVector.sub(prm.mspos[path.get(index)], prm.mspos[path.get(index-1)]).normalize();
+		dir = PVector.sub(prm.pos[path.get(index)], prm.pos[path.get(index-1)]).normalize();
 	}
 	else {
 		// keep the agent facing the destination
@@ -155,7 +155,7 @@ void draw() {
 	// Start defining points
 	beginShape(POINTS); 
 	for (int i = 0; i < samples + 2; i++) {
-		vertex(10 * prm.mspos[i].x, -height / 2, 10 * prm.mspos[i].y);
+		vertex(10 * prm.pos[i].x, -height / 2, 10 * prm.pos[i].y);
 	}
 	endShape(); 
 	// Start defining connections
@@ -163,9 +163,9 @@ void draw() {
 	beginShape(LINES); 
 	for (int i = 0; i < samples + 2; i++) {
 		for (int j = i + 1; j < samples + 2; j++) {
-			if (prm.adjacent[i][j]) {
-				vertex(10 * prm.mspos[i].x, -height / 2, 10 * prm.mspos[i].y);
-				vertex(10 * prm.mspos[j].x, -height / 2, 10 * prm.mspos[j].y);
+			if (prm.neighbor[i][j]) {
+				vertex(10 * prm.pos[i].x, -height / 2, 10 * prm.pos[i].y);
+				vertex(10 * prm.pos[j].x, -height / 2, 10 * prm.pos[j].y);
 			}
 		}
 	}
@@ -175,8 +175,8 @@ void draw() {
   strokeWeight(2);
 	beginShape(LINES);
   for (int i = 0; i < path.size() - 1; i++) {
-    vertex(10 * prm.mspos[path.get(i)].x, -height / 2, 10 * prm.mspos[path.get(i)].y);
-    vertex(10 * prm.mspos[path.get(i + 1)].x, -height / 2, 10 * prm.mspos[path.get(i + 1)].y);
+    vertex(10 * prm.pos[path.get(i)].x, -height / 2, 10 * prm.pos[path.get(i)].y);
+    vertex(10 * prm.pos[path.get(i + 1)].x, -height / 2, 10 * prm.pos[path.get(i + 1)].y);
   }
   endShape();
   
